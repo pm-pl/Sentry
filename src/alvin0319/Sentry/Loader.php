@@ -78,7 +78,8 @@ final class Loader extends PluginBase{
 		/** @var MainLogger $value */
 		$value = $prop->getValue($this->getServer());
 		unset($value); // make sure to call __destruct()
-		$logger = new SentryLogger(Path::join($this->getServer()->getDataPath(), "server.log"), Terminal::hasFormattingCodes(), "Server", new \DateTimeZone(Timezone::get()));
+		$logger = new SentryLogger(Path::join($this->getServer()->getDataPath(), "server.log"), Terminal::hasFormattingCodes(), "Server", new \DateTimeZone(Timezone::get()), $this->getServer()->getConfigGroup()->getPropertyInt("debug.level", 1) > 1);
+		\GlobalLogger::set($logger);
 		$prop->setValue($this->getServer(), $logger);
 		$this->getScheduler()->scheduleTask(new ClosureTask(function() : void{
 			foreach($this->getServer()->getPluginManager()->getPlugins() as $plugin){
@@ -95,12 +96,6 @@ final class Loader extends PluginBase{
 	protected function onEnable() : void{
 		if(!$this->enabled){
 			$this->getServer()->getPluginManager()->disablePlugin($this);
-		}
-	}
-
-	protected function onDisable() : void{
-		if($this->getServer()->getLogger() instanceof SentryLogger){
-			$this->getServer()->getLogger()->shutdownLogWriterThread();
 		}
 	}
 }
